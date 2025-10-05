@@ -1,1 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Ranking System - Live Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .search-input-wrapper {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #searchInput:focus {
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .algorithm-selector {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .algo-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .algo-checkbox:hover {
+            background: #e8e8e8;
+        }
+
+        .algo-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .sample-queries {
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .sample-queries-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .sample-query-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .sample-pill {
+            padding: 6px 12px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sample-pill:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .stats-bar {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .result-column {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .algo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .algo-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .result-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .search-result {
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .search-result:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .result-title {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+            flex: 1;
+        }
+
+        .result-score {
+            background: #4CAF50;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+
+        .result-content {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 0.85em;
+            flex-wrap: wrap;
+        }
+
+        .meta-tag {
+            background: #e0e0e0;
+            padding: 3px 8px;
+            border-radius: 10px;
+            color: #555;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #667eea;
+            background: white;
+            border-radius: 15px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .search-input-wrapper {
+                flex-direction: column;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 Search Ranking System</h1>
+            <p class="subtitle">Compare TF-IDF, BM25, and LambdaMART algorithms in real-time</p>
+        </header>
+
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-item">
+                <div class="stat-value" id="docCount">-</div>
+                <div class="stat-label">Documents</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">3</div>
+                <div class="stat-label">Algorithms</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="searchCount">0</div>
+                <div class="stat-label">Searches</div>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <div class="search-input-wrapper">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Enter your search query (e.g., machine learning algorithms)..."
+                >
+                <button id="searchButton" onclick="performSearch()">Search</button>
+            </div>
+
+            <div class="algorithm-selector">
+                <label class="algo-checkbox">
+                    <input type="checkbox" id="algoTfidf" value="tfidf" checked>
+                    <span>TF-IDF (Fast)</span>
+                </label>
+                <label class="algo-checkbox">
+                    <input type="checkbox" id="algoBm25" value="bm25" checked>
+                    <span>BM25 (Better)</span>
+                </label>
+                <label class="algo-checkbox">
+                    <input type="checkbox" id="algoLambdamart" value="lambdamart" checked>
+                    <span>LambdaMART (Best)</span>
+                </label>
+            </div>
+
+            <div class="sample-queries">
+                <div class="sample-queries-title">📌 Try these sample queries:</div>
+                <div class="sample-query-pills" id="sampleQueries">
+                    <span class="sample-pill" onclick="tryQuery('machine learning algorithms')">machine learning algorithms</span>
+                    <span class="sample-pill" onclick="tryQuery('web development javascript')">web development javascript</span>
+                    <span class="sample-pill" onclick="tryQuery('database optimization')">database optimization</span>
+                    <span class="sample-pill" onclick="tryQuery('cloud computing aws')">cloud computing aws</span>
+                    <span class="sample-pill" onclick="tryQuery('python programming')">python programming</span>
+                    <span class="sample-pill" onclick="tryQuery('data science analytics')">data science analytics</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="messageArea"></div>
+        <div class="results-container" id="resultsContainer"></div>
+    </div>
+
+    <script>
+        let searchCounter = 0;
+
+        // Load stats on page load
+        window.addEventListener('load', function() {
+            loadStats();
+            
+            // Add enter key listener
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        });
+
+        function loadStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.indexed_documents) {
+                        document.getElementById('docCount').textContent = data.indexed_documents;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading stats:', error);
+                    document.getElementById('docCount').textContent = '?';
+                });
+        }
+
+        function tryQuery(query) {
+            document.getElementById('searchInput').value = query;
+            performSearch();
+        }
+
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('messageArea');
+            const messageClass = type === 'error' ? 'error' : 'success';
+            messageArea.innerHTML = '<div class="' + messageClass + '">' + message + '</div>';
+            
+            setTimeout(function() {
+                messageArea.innerHTML = '';
+            }, 5000);
+        }
+
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            
+            if (!query) {
+                showMessage('❌ Please enter a search query', 'error');
+                return;
+            }
+
+            // Get selected algorithms
+            const algorithms = [];
+            if (document.getElementById('algoTfidf').checked) algorithms.push('tfidf');
+            if (document.getElementById('algoBm25').checked) algorithms.push('bm25');
+            if (document.getElementById('algoLambdamart').checked) algorithms.push('lambdamart');
+
+            if (algorithms.length === 0) {
+                showMessage('❌ Please select at least one algorithm', 'error');
+                return;
+            }
+
+            // Clear previous results
+            document.getElementById('messageArea').innerHTML = '';
+            document.getElementById('resultsContainer').innerHTML = 
+                '<div class="loading"><div class="spinner"></div><p>Searching...</p></div>';
+
+            // Disable button
+            const searchButton = document.getElementById('searchButton');
+            searchButton.disabled = true;
+
+            // Update search counter
+            searchCounter++;
+            document.getElementById('searchCount').textContent = searchCounter;
+
+            // Make request
+            fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    query: query,
+                    algorithms: algorithms,
+                    top_k: 10
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                searchButton.disabled = false;
+                
+                if (data.error) {
+                    showMessage('❌ ' + data.error, 'error');
+                    document.getElementById('resultsContainer').innerHTML = '';
+                    return;
+                }
+
+                displayResults(data);
+                showMessage('✅ Search completed successfully!', 'success');
+            })
+            .catch(error => {
+                searchButton.disabled = false;
+                console.error('Error:', error);
+                showMessage('❌ Error performing search. Make sure the server is running and data is indexed.', 'error');
+                document.getElementById('resultsContainer').innerHTML = '';
+            });
+        }
+
+        function displayResults(data) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+
+            const algoOrder = ['tfidf', 'bm25', 'lambdamart'];
+            const algoNames = {
+                'tfidf': 'TF-IDF',
+                'bm25': 'BM25',
+                'lambdamart': 'LambdaMART'
+            };
+
+            algoOrder.forEach(function(algoKey) {
+                if (data.results && data.results[algoKey]) {
+                    const algoData = data.results[algoKey];
+                    
+                    if (algoData.error) {
+                        return;
+                    }
+
+                    const column = document.createElement('div');
+                    column.className = 'result-column';
+
+                    const header = document.createElement('div');
+                    header.className = 'algo-header';
+                    
+                    const algoName = document.createElement('div');
+                    algoName.className = 'algo-name';
+                    algoName.textContent = algoNames[algoKey];
+                    
+                    const resultCount = document.createElement('div');
+                    resultCount.className = 'result-count';
+                    resultCount.textContent = algoData.count + ' results';
+                    
+                    header.appendChild(algoName);
+                    header.appendChild(resultCount);
+                    column.appendChild(header);
+
+                    if (algoData.results.length === 0) {
+                        const noResults = document.createElement('div');
+                        noResults.className = 'no-results';
+                        noResults.textContent = 'No results found';
+                        column.appendChild(noResults);
+                    } else {
+                        algoData.results.forEach(function(result) {
+                            const resultDiv = document.createElement('div');
+                            resultDiv.className = 'search-result';
+                            
+                            const resultHeader = document.createElement('div');
+                            resultHeader.className = 'result-header';
+                            
+                            const title = document.createElement('div');
+                            title.className = 'result-title';
+                            title.textContent = result.title;
+                            
+                            const score = document.createElement('div');
+                            score.className = 'result-score';
+                            score.textContent = result.score.toFixed(4);
+                            
+                            resultHeader.appendChild(title);
+                            resultHeader.appendChild(score);
+                            
+                            const content = document.createElement('div');
+                            content.className = 'result-content';
+                            content.textContent = result.content;
+                            
+                            const meta = document.createElement('div');
+                            meta.className = 'result-meta';
+                            
+                            const topicTag = document.createElement('span');
+                            topicTag.className = 'meta-tag';
+                            topicTag.textContent = '📁 ' + result.topic;
+                            
+                            const qualityTag = document.createElement('span');
+                            qualityTag.className = 'meta-tag';
+                            qualityTag.textContent = '⭐ ' + result.quality_score.toFixed(2);
+                            
+                            meta.appendChild(topicTag);
+                            meta.appendChild(qualityTag);
+                            
+                            resultDiv.appendChild(resultHeader);
+                            resultDiv.appendChild(content);
+                            resultDiv.appendChild(meta);
+                            
+                            column.appendChild(resultDiv);
+                        });
+                    }
+
+                    container.appendChild(column);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
