@@ -11,47 +11,23 @@ Production-grade search engine implementing multiple ranking algorithms with com
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Client Layer                             │
-│                  (Web UI / API Requests)                         │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      API Gateway (Flask)                         │
-│                   /search, /index, /metrics                      │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                ┌────────────┴────────────┐
-                ▼                         ▼
-┌──────────────────────────┐  ┌──────────────────────────┐
-│   Search Engine Core     │  │   Analytics Engine       │
-│  - Query Processing      │  │  - Metrics Calculation   │
-│  - Document Retrieval    │  │  - A/B Test Manager      │
-│  - Ranking Algorithms    │  │  - Statistical Analysis  │
-└──────────┬───────────────┘  └──────────┬───────────────┘
-           │                              │
-           ├──────────┬──────────────────┤
-           ▼          ▼                  ▼
-┌─────────────┐ ┌──────────┐ ┌────────────────────┐
-│   TF-IDF    │ │   BM25   │ │   LambdaMART      │
-│  (Baseline) │ │(Enhanced)│ │ (Learning-to-Rank)│
-└─────────────┘ └──────────┘ └────────────────────┘
-           │          │                  │
-           └──────────┴──────────────────┘
-                      ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      Feature Engine                              │
-│  - Semantic Similarity    - Click Signals    - Query Intent     │
-│  - Document Quality       - Freshness        - Authority Score  │
-└────────────────────────────┬────────────────────────────────────┘
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                       Data Storage Layer                         │
-│  - Document Index (JSON)  - Model Weights  - Query Logs         │
-│  - Evaluation Metrics     - A/B Test Results                    │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    CL[Client Layer<br/>Web UI / API Requests]
+    GW[API Gateway Flask<br/>/search, /index, /metrics]
+    subgraph CORE[Engine]
+        SE[Search Engine Core<br/>Query Processing<br/>Document Retrieval<br/>Ranking Algorithms]
+        AE[Analytics Engine<br/>Metrics Calculation<br/>A/B Test Manager<br/>Statistical Analysis]
+    end
+    subgraph RANK[Ranking Algorithms]
+        TFIDF[TF-IDF<br/>Baseline]
+        BM25[BM25<br/>Enhanced]
+        LM[LambdaMART<br/>Learning-to-Rank]
+    end
+    FE[Feature Engine<br/>Semantic Similarity, Click Signals, Query Intent<br/>Document Quality, Freshness, Authority Score]
+    DS[(Data Storage Layer<br/>Document Index JSON, Model Weights, Query Logs<br/>Evaluation Metrics, A/B Test Results)]
+    CL --> GW --> CORE
+    SE --> RANK --> FE --> DS
 ```
 
 ## Features
